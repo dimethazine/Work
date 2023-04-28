@@ -1,0 +1,134 @@
+// ==UserScript==
+// @name         New Userscript
+// @author       Roy
+// @match        http://*/*
+// @icon         data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==
+// @require https://raw.githubusercontent.com/lodash/lodash/4.17.4/dist/lodash.js
+// ==/UserScript==
+
+// coupons
+let coupon1 = sessionStorage.coupon1
+let coupon2 = sessionStorage.coupon2
+let coupon3 = sessionStorage.coupon3
+let coupon4 = sessionStorage.coupon4
+let coupon5 = sessionStorage.coupon5
+let coupon6 = sessionStorage.coupon6
+console.log(coupon1)
+console.log(coupon2)
+console.log(coupon3)
+console.log(coupon4)
+console.log(coupon5)
+console.log(coupon6)
+
+
+// create empty arrays and declare variables
+let model = 0
+let optionValues = []
+
+let newModel = $('#ctl00_ctl00_Main_Main_ddlNewVehicle_ddlModel').val() // value of new model
+
+//select the dropdown element
+let exitingMake = $('#ctl00_ctl00_Main_Main_ddlExistingMakes'); // Configured existing makes
+let newMake = $('#ctl00_ctl00_Main_Main_ddlNewVehicle_ddlMake').val(); // new makes
+let editMake = $('#ctl00_ctl00_Main_Main_makeWrapper').text() // wrapper to check if it's on the edit settings screen
+var saved = $(":contains(' settings have been saved.')"); // check to see if it has saved
+let state = sessionStorage.state2;
+
+
+//get all the options in the dropdown
+var options = exitingMake.find('option'); // find the option of each of the new models
+
+//loop through each option
+options.each(function() {
+  //get the value of the option
+  var value = $(this).val();
+  //push the value to the array
+  optionValues.push(value);
+});
+
+
+if (state == 'notnext') {
+    if (!optionValues.includes("Unknown|2024|Subaru|") && saved.length == 0 && newMake == 'Acura') { // First
+        console.log('test')
+        getCoupons()
+    } else if (!optionValues.includes("Unknown|2024|Subaru|") && saved.length == 0 && newMake == 'Subaru') { // Runs two times, second and third refresh
+        configureAll()
+        console.log('configure all')
+        console.log($('#ctl00_ctl00_Main_Main_ddlNewVehicle_ddlMake option:selected').text())
+    } else if (optionValues.includes("Unknown|2023|Subaru|") && !optionValues.includes("Unknown|2023|Subaru|WRX")) {
+        configureExclude()
+        console.log('test two')
+    } else if (optionValues.includes("Unknown|2023|Subaru|") && optionValues.includes("Unknown|2023|Subaru|WRX") && saved.length > 0) {
+        nextDealership()
+        sessionStorage.coupon1 = ''
+        sessionStorage.coupon2 = ''
+        sessionStorage.coupon3 = ''
+        sessionStorage.coupon4 = ''
+        sessionStorage.coupon5 = ''
+        sessionStorage.coupon6 = ''
+        console.log(sessionStorage.coupon1)
+        console.log(sessionStorage.coupon2)
+        console.log(sessionStorage.coupon3)
+        console.log(sessionStorage.coupon4)
+        console.log(sessionStorage.coupon5)
+        console.log(sessionStorage.coupon6)
+        console.log('switch dealerships')
+    }
+}
+
+
+function getCoupons() {
+    if (newMake == 'Acura' && saved.length == 0 && $('#ctl00_ctl00_Main_Main_ddlExistingMakes option:selected').val() == '') {
+        $('#ctl00_ctl00_Main_Main_ddlExistingMakes').val('Unknown|2020|Subaru|')
+        $('#ctl00_ctl00_Main_Main_btnEditExisting').click()
+    } else if (newMake == 'Acura' && saved.length == 0 && $('#ctl00_ctl00_Main_Main_ddlExistingMakes option:selected').val() == 'Unknown|2020|Subaru|' && editMake.includes('Notification Timing:') ) {
+        coupon1 = $('#ctl00_ctl00_Main_Main_NotificationMailSettings1_coupon1').val()
+        coupon2 = $('#ctl00_ctl00_Main_Main_NotificationMailSettings1_coupon2').val()
+        coupon3 = $('#ctl00_ctl00_Main_Main_NotificationMailSettings1_coupon3').val()
+        coupon4 = $('#ctl00_ctl00_Main_Main_NotificationMailSettings2_coupon1').val()
+        coupon5 = $('#ctl00_ctl00_Main_Main_NotificationMailSettings2_coupon2').val()
+        coupon6 = $('#ctl00_ctl00_Main_Main_NotificationMailSettings2_coupon3').val()
+        sessionStorage.coupon1 = coupon1
+        sessionStorage.coupon2 = coupon2
+        sessionStorage.coupon3 = coupon3
+        sessionStorage.coupon4 = coupon4
+        sessionStorage.coupon5 = coupon5
+        sessionStorage.coupon6 = coupon6
+        console.log('getting coupons...')
+        configureAll()
+    }
+}
+
+function configureAll() {
+    if (newMake == 'Acura' && saved.length == 0 && $('#ctl00_ctl00_Main_Main_ddlExistingMakes option:selected').val() == 'Unknown|2020|Subaru|' && editMake.includes('Notification Timing:') ) {
+        $("#ctl00_ctl00_Main_Main_ddlNewVehicle_ddlMake").val("Subaru").change();
+        console.log('switching to Subaru for new make')
+    } else if (newMake == 'Subaru' && editMake.includes('Notification Timing:') && saved.length == 0 && $('#ctl00_ctl00_Main_Main_ddlExistingMakes option:selected').text() == 'All Subaru 2020') {
+        console.log('clicking add new button')
+        $('#ctl00_ctl00_Main_Main_btnAddNew').click()
+    } else if (newMake == 'Subaru' && editMake.includes('Notification Timing:') && saved.length == 0 ) {
+        // 7 day
+        $('#ctl00_ctl00_Main_Main_NotificationMailSettings1_defaultEmails_ddlTemplate').val('f9057dce-1745-4db0-966c-b6f6c8d4c9dc').trigger('change')
+        $('#ctl00_ctl00_Main_Main_NotificationMailSettings1_ddlDefaultDaysAfterSale').val(7)
+        $('#ctl00_ctl00_Main_Main_NotificationMailSettings1_emailSubject_textBox').val('Discover the Perfect ways to customize your $vehicle.Model')
+
+        // 30 day
+        $('#ctl00_ctl00_Main_Main_NotificationMailSettings2_ddlDefaultDaysAfterSale').val(30)
+        $('#ctl00_ctl00_Main_Main_NotificationMailSettings2_defaultEmails_ddlTemplate').val('b37b4160-2c09-45f4-9c89-f09fd4c0a9e1').trigger('change')
+        $('#ctl00_ctl00_Main_Main_NotificationMailSettings2_defaultPrint_ddlPrintDocuments').val('632a8d74-82bd-45cb-8b06-3ace6af5044d')
+        $('#ctl00_ctl00_Main_Main_NotificationMailSettings1_coupon1').val(coupon1)
+        $('#ctl00_ctl00_Main_Main_NotificationMailSettings1_coupon2').val(coupon2)
+        $('#ctl00_ctl00_Main_Main_NotificationMailSettings1_coupon3').val(coupon3)
+        $('#ctl00_ctl00_Main_Main_NotificationMailSettings2_coupon1').val(coupon4)
+        $('#ctl00_ctl00_Main_Main_NotificationMailSettings2_coupon2').val(coupon5)
+        $('#ctl00_ctl00_Main_Main_NotificationMailSettings2_coupon3').val(coupon6)
+        $('#ctl00_ctl00_Main_Main_NotificationMailSettings2_emailSubject_textBox').val('$customerName.FirstName, outfit your $vehicle.Model for any adventure')
+        $('#ctl00_ctl00_Main_Main_btnSaveDefault').click()
+    }
+}
+
+
+
+
+
+
